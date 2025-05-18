@@ -10,7 +10,7 @@ import com.Microservicio.Cursos.model.Curso;
 @Repository
 public interface CursoRepository extends JpaRepository<Curso, Integer>
 {
-    List<Curso> findALL();
+    List<Curso> findAll();
 
     @SuppressWarnings("unchecked")
     Curso save(Curso curso);
