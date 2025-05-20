@@ -12,6 +12,7 @@ import com.Microservicio.Cursos.exception.CursoNotFoundException;
 import com.Microservicio.Cursos.exception.EstudianteNotFoundException;
 import com.Microservicio.Cursos.exception.EstudianteYaInscritoException;
 import com.Microservicio.Cursos.model.Estudiante;
+import com.Microservicio.Cursos.model.Inscripcion;
 import com.Microservicio.Cursos.service.InscripcionService;
 
 @RestController
@@ -26,7 +27,7 @@ public class InscripcionController {
             @PathVariable int idCurso,
             @PathVariable String rut) {
         try {
-            String resultado = inscripcionService.inscribirEstudiante(idCurso, rut);
+            Inscripcion resultado = inscripcionService.inscribirEstudiante(idCurso, rut);
             return ResponseEntity.ok(resultado);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

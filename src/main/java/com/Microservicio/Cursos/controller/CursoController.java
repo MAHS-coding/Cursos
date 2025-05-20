@@ -20,7 +20,7 @@ public class CursoController {
 
     @GetMapping
     public ResponseEntity<List<Curso>> getCursos() {
-        return new ResponseEntity<>(cursoService.listarCursos(), HttpStatus.OK);
+        return new ResponseEntity<>(cursoService.listarTodosCursos(), HttpStatus.OK);
     }
 
     @GetMapping("/{idCurso}")
@@ -35,7 +35,7 @@ public class CursoController {
 
     @PostMapping
     public ResponseEntity<Curso> postCurso(@RequestBody Curso curso) {
-        return new ResponseEntity<>(cursoService.guardarCurso(curso), HttpStatus.OK);
+        return new ResponseEntity<>(cursoService.crearCurso(curso), HttpStatus.OK);
     }
 
     @PutMapping("/{idCurso}")

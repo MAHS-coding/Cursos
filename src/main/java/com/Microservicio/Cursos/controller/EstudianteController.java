@@ -24,7 +24,7 @@ public class EstudianteController {
     @PostMapping
     public ResponseEntity<?> crearEstudiante(@RequestBody Estudiante estudiante) {
         try {
-            Estudiante estudianteGuardado = estudianteService.guardarEstudiante(estudiante);
+            Estudiante estudianteGuardado = estudianteService.crearEstudiante(estudiante);
             return ResponseEntity.ok(estudianteGuardado);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -35,6 +35,6 @@ public class EstudianteController {
 
     @GetMapping
     public ResponseEntity<List<Estudiante>> listarEstudiantes() {
-        return ResponseEntity.ok(estudianteService.listarTodos());
+        return ResponseEntity.ok(estudianteService.listarTodosEstudiantes());
     }
 }
