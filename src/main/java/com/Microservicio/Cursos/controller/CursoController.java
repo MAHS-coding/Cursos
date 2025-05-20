@@ -24,27 +24,26 @@ public class CursoController {
     private CursoService cursoService;
 
     @GetMapping
-    public ResponseEntity<List<Curso>> getCursos()
-    {
+    public ResponseEntity<List<Curso>> getCursos() {
         return new ResponseEntity<>(cursoService.listarCursos(), HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<Curso> postCurso(@RequestBody Curso curso)
-    {
+    public ResponseEntity<Curso> postCurso(@RequestBody Curso curso) {
         return new ResponseEntity<>(cursoService.guardarCurso(curso), HttpStatus.OK);
     }
 
     @PutMapping("/{idCurso}")
-    public ResponseEntity<?> actualizarCurso
-    (@PathVariable int idCurso,
-    @RequestBody Curso cursoActualizado)
-    { try {
-        Curso curso = cursoService.actualizarCurso(idCurso, cursoActualizado);
-        return new ResponseEntity<>(curso, HttpStatus.OK);
-    } catch (CursoNotFoundException ex) {
-        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
-    }
-
+    public ResponseEntity<?> actualizarCurso(
+            @PathVariable int idCurso,
+            @RequestBody Curso cursoActualizado) {
+        try {
+            Curso curso = cursoService.actualizarCurso(idCurso, cursoActualizado);
+            return ResponseEntity.ok(curso);
+        } catch (CursoNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        } catch (Exception ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
+        }
     }
 }
