@@ -2,11 +2,15 @@ package com.Microservicio.Cursos.model;
 
 import lombok.Data;
 
+import java.util.List;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -35,4 +39,19 @@ public class Curso {
     @Column(name = "cupos_disponibles", nullable = false)
     private int cuposDisponiblesCurso;
 
+    @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL)
+    private List<Inscripcion> inscripciones;
+
+    public boolean tieneCuposDisponibles()
+    {
+        return this.cuposDisponiblesCurso > 0;
+    }
+
+    public void reducirCupo(){
+        if (this.cuposDisponiblesCurso > 0){
+            this.cuposDisponiblesCurso--;
+        }else {
+            throw new IllegalStateException("No hay cupos disponibles");
+        }
+    }
 }

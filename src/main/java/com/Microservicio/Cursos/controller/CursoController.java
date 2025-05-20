@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.Microservicio.Cursos.exception.CursoNotFoundException;
 import com.Microservicio.Cursos.model.Curso;
+import com.Microservicio.Cursos.model.Estudiante;
 import com.Microservicio.Cursos.service.CursoService;
 
 @RestController
@@ -55,6 +57,46 @@ public class CursoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error interno del servidor");
+        }
+    }
+
+    @PostMapping("/{idCurso}/inscribir")
+    public ResponseEntity<?> inscribirEstudiante(
+            @PathVariable int idCurso,
+            @RequestParam String rut) {
+        try {
+            String resultado = cursoService.inscribirEstudiante(idCurso, rut);
+            return ResponseEntity.ok(resultado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (CursoNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (EstudianteNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (CupoAgotadoException | EstudianteYaInscritoException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/{idCurso}/estudiantes")
+    public ResponseEntity<List<Estudiante>> obtenerEstudiantesInscritos(
+            @PathVariable int idCurso) {
+        return ResponseEntity.ok(cursoService.obtenerEstudiantesInscritos(idCurso));
+    }
+
+    // Endpoint para crear estudiantes
+    @PostMapping("/estudiantes")
+    public ResponseEntity<?> crearEstudiante(@RequestBody Estudiante estudiante) {
+        try {
+            // Validación y formateo del RUT
+            if (!RutUtils.validarRut(estudiante.getRut())) {
+                return ResponseEntity.badRequest().body("Formato de RUT inválido");
+            }
+            estudiante.setRut(RutUtils.formatearRut(estudiante.getRut()));
+            
+            return ResponseEntity.ok(cursoService.guardarEstudiante(estudiante));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("Error al crear estudiante");
         }
     }
 }
