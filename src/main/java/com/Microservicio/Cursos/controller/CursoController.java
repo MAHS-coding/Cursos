@@ -14,7 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.Microservicio.Cursos.exception.CupoAgotadoException;
 import com.Microservicio.Cursos.exception.CursoNotFoundException;
+import com.Microservicio.Cursos.exception.EstudianteNotFoundException;
+import com.Microservicio.Cursos.exception.EstudianteYaInscritoException;
 import com.Microservicio.Cursos.model.Curso;
 import com.Microservicio.Cursos.model.Estudiante;
 import com.Microservicio.Cursos.service.CursoService;
@@ -31,8 +34,7 @@ public class CursoController {
     }
 
     @GetMapping("/{idCurso}")
-    public ResponseEntity<?> getCursoPorId(@PathVariable int idCurso)
-    {
+    public ResponseEntity<?> getCursoPorId(@PathVariable int idCurso) {
         try {
             Curso curso = cursoService.buscarCursoPorId(idCurso);
             return ResponseEntity.ok(curso);
@@ -88,15 +90,12 @@ public class CursoController {
     @PostMapping("/estudiantes")
     public ResponseEntity<?> crearEstudiante(@RequestBody Estudiante estudiante) {
         try {
-            // Validación y formateo del RUT
-            if (!RutUtils.validarRut(estudiante.getRut())) {
-                return ResponseEntity.badRequest().body("Formato de RUT inválido");
-            }
-            estudiante.setRut(RutUtils.formatearRut(estudiante.getRut()));
-            
-            return ResponseEntity.ok(cursoService.guardarEstudiante(estudiante));
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("Error al crear estudiante");
+            Estudiante estudianteGuardado = cursoService.guardarEstudiante(estudiante);
+            return ResponseEntity.ok(estudianteGuardado);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         }
     }
 }

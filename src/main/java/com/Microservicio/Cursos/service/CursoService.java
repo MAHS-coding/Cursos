@@ -7,13 +7,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.Microservicio.Cursos.exception.CupoAgotadoException;
 import com.Microservicio.Cursos.exception.CursoNotFoundException;
+import com.Microservicio.Cursos.exception.EstudianteNotFoundException;
+import com.Microservicio.Cursos.exception.EstudianteYaInscritoException;
 import com.Microservicio.Cursos.model.Curso;
 import com.Microservicio.Cursos.model.Estudiante;
 import com.Microservicio.Cursos.model.Inscripcion;
 import com.Microservicio.Cursos.repository.CursoRepository;
 import com.Microservicio.Cursos.repository.EstudianteRepository;
 import com.Microservicio.Cursos.repository.InscripcionRepository;
+import com.Microservicio.Cursos.utils.RutUtils;
 
 @Service
 public class CursoService {
@@ -28,10 +32,9 @@ public class CursoService {
         return cursoRepository.findAll();
     }
 
-    public Curso buscarCursoPorId(int idCurso)
-    {
+    public Curso buscarCursoPorId(int idCurso) {
         return cursoRepository.findById(idCurso)
-        .orElseThrow(()-> new CursoNotFoundException("Curso con ID " + idCurso + " no encontrado"));
+                .orElseThrow(() -> new CursoNotFoundException("Curso con ID " + idCurso + " no encontrado"));
     }
 
     public Curso guardarCurso(Curso curso) {
@@ -42,7 +45,7 @@ public class CursoService {
     public Curso actualizarCurso(int idCurso, Curso cursoActualizado) {
 
         Optional<Curso> cursoOptional = cursoRepository.findById(idCurso);
-        
+
         if (cursoOptional.isEmpty()) {
             throw new CursoNotFoundException("Curso con ID " + idCurso + " no encontrado");
         }
@@ -67,7 +70,7 @@ public class CursoService {
 
         Curso curso = cursoRepository.findById(idCurso)
                 .orElseThrow(() -> new CursoNotFoundException("Curso no encontrado"));
-        
+
         Estudiante estudiante = estudianteRepository.findById(rutFormateado)
                 .orElseThrow(() -> new EstudianteNotFoundException("Estudiante no encontrado"));
 
@@ -75,14 +78,14 @@ public class CursoService {
             throw new CupoAgotadoException("No hay cupos disponibles en este curso");
         }
 
-        if (inscripcionRepository.existsByCursoIdCursoAndEstudianteRut(idCurso, rutFormateado)) {
+        if (inscripcionRepository.existByCursoAndEstudianteRut(idCurso, rutFormateado)) {
             throw new EstudianteYaInscritoException("El estudiante ya está inscrito en este curso");
         }
 
         Inscripcion inscripcion = new Inscripcion();
         inscripcion.setCurso(curso);
         inscripcion.setEstudiante(estudiante);
-        
+
         inscripcionRepository.save(inscripcion);
         curso.reducirCupo();
         cursoRepository.save(curso);
@@ -96,5 +99,23 @@ public class CursoService {
                 .stream()
                 .map(Inscripcion::getEstudiante)
                 .toList();
+    }
+
+    @Transactional
+    public Estudiante guardarEstudiante(Estudiante estudiante) {
+        // Validar RUT antes de guardar
+        if (!RutUtils.validarRut(estudiante.getRut())) {
+            throw new IllegalArgumentException("RUT inválido");
+        }
+
+        // Formatear RUT consistentemente
+        estudiante.setRut(RutUtils.formatearRut(estudiante.getRut()));
+
+        // Verificar si el estudiante ya existe
+        if (estudianteRepository.existsByRut(estudiante.getRut())) {
+            throw new RuntimeException("El estudiante con RUT " + estudiante.getRut() + " ya existe");
+        }
+
+        return estudianteRepository.save(estudiante);
     }
 }

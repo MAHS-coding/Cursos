@@ -6,5 +6,5 @@ import com.Microservicio.Cursos.model.Estudiante;
 
 public interface EstudianteRepository extends JpaRepository<Estudiante, String>
 {
-    boolean existByRut(String rut);
+    boolean existsByRut(String rut);
 }
