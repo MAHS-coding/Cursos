@@ -6,11 +6,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.Microservicio.Cursos.exception.CursoNotFoundException;
 import com.Microservicio.Cursos.model.Curso;
 import com.Microservicio.Cursos.service.CursoService;
 
@@ -30,5 +33,18 @@ public class CursoController {
     public ResponseEntity<Curso> postCurso(@RequestBody Curso curso)
     {
         return new ResponseEntity<>(cursoService.guardarCurso(curso), HttpStatus.OK);
+    }
+
+    @PutMapping("/{idCurso}")
+    public ResponseEntity<?> actualizarCurso
+    (@PathVariable int idCurso,
+    @RequestBody Curso cursoActualizado)
+    { try {
+        Curso curso = cursoService.actualizarCurso(idCurso, cursoActualizado);
+        return new ResponseEntity<>(curso, HttpStatus.OK);
+    } catch (CursoNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
+    }
+
     }
 }
