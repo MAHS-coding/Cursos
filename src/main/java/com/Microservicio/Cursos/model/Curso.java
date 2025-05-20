@@ -4,6 +4,8 @@ import lombok.Data;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -39,6 +41,7 @@ public class Curso {
     @Column(name = "cupos_disponibles", nullable = false)
     private int cuposDisponiblesCurso;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "curso", cascade = CascadeType.ALL)
     private List<Inscripcion> inscripciones;
 
