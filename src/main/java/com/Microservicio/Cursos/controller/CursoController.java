@@ -1,5 +1,7 @@
 package com.Microservicio.Cursos.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +20,7 @@ public class CursoController
     private CursoService cursoService;
 
     @GetMapping
-    public ResponseEntity<Curso> getCursos()
+    public ResponseEntity<List<Curso>> getCursos()
     {
         return new ResponseEntity<>(cursoService.listarCursos(),HttpStatus.OK);
     }
