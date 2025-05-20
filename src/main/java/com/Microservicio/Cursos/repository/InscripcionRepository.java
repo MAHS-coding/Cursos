@@ -6,9 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.Microservicio.Cursos.model.Inscripcion;
 
-public interface InscripcionRepository extends JpaRepository<Inscripcion, Integer>
-{
+public interface InscripcionRepository extends JpaRepository<Inscripcion, Integer> {
     List<Inscripcion> findByCursoIdCurso(int idCurso);
-    boolean existByCursoAndEstudianteRut(int idCurso, String rut);
-    long contByCursoIdCursoAndActivaTrue(int idCurso);
+    boolean existsByCursoIdCursoAndEstudianteRut(int idCurso, String rut); // Cambiado para buscar por ID
+    long countByCursoIdCursoAndActivaTrue(int idCurso); // Corregido "count"
 }
