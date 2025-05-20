@@ -20,6 +20,12 @@ public class CursoService {
         return cursoRepository.findAll();
     }
 
+    public Curso buscarCursoPorId(int idCurso)
+    {
+        return cursoRepository.findById(idCurso)
+        .orElseThrow(()-> new CursoNotFoundException("Curso con ID " + idCurso + " no encontrado"));
+    }
+
     public Curso guardarCurso(Curso curso) {
         return cursoRepository.save(curso);
     }

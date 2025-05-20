@@ -28,6 +28,17 @@ public class CursoController {
         return new ResponseEntity<>(cursoService.listarCursos(), HttpStatus.OK);
     }
 
+    @GetMapping("/{idCurso}")
+    public ResponseEntity<?> getCursoPorId(@PathVariable int idCurso)
+    {
+        try {
+            Curso curso = cursoService.buscarCursoPorId(idCurso);
+            return ResponseEntity.ok(curso);
+        } catch (CursoNotFoundException ex) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+        }
+    }
+
     @PostMapping
     public ResponseEntity<Curso> postCurso(@RequestBody Curso curso) {
         return new ResponseEntity<>(cursoService.guardarCurso(curso), HttpStatus.OK);
