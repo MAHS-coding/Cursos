@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.Microservicio.Cursos.dto.InscripcionRequest;
 import com.Microservicio.Cursos.exception.CupoAgotadoException;
 import com.Microservicio.Cursos.exception.CursoNotFoundException;
 import com.Microservicio.Cursos.exception.EstudianteNotFoundException;
@@ -22,12 +23,10 @@ public class InscripcionController {
     @Autowired
     private InscripcionService inscripcionService;
 
-    @PostMapping("/curso/{idCurso}/estudiante/{rut}")
-    public ResponseEntity<?> inscribirEstudiante(
-            @PathVariable int idCurso,
-            @PathVariable String rut) {
+    @PostMapping
+    public ResponseEntity<?> inscribirEstudiante(@RequestBody InscripcionRequest request) {
         try {
-            Inscripcion resultado = inscripcionService.inscribirEstudiante(idCurso, rut);
+            Inscripcion resultado = inscripcionService.inscribirEstudiante(request.getIdCurso(), request.getRutEstudiante());
             return ResponseEntity.ok(resultado);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

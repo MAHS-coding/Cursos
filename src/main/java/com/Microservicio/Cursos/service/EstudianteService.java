@@ -2,7 +2,6 @@ package com.Microservicio.Cursos.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.Microservicio.Cursos.exception.EstudianteNotFoundException;
@@ -17,8 +16,8 @@ import jakarta.transaction.Transactional;
 public class EstudianteService {
 
     private final EstudianteRepository estudianteRepository;
-    @Autowired
-    public EstudianteService(EstudianteRepository estudianteRepository, RutUtils rutUtils) {
+    
+    public EstudianteService(EstudianteRepository estudianteRepository) {
         this.estudianteRepository = estudianteRepository;
     }
 

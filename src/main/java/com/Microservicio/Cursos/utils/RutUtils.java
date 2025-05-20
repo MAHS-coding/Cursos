@@ -1,5 +1,8 @@
 package com.Microservicio.Cursos.utils;
 
+import org.springframework.stereotype.Component;
+
+@Component
 public class RutUtils {
     public static boolean validarRut(String rut) {
         rut = rut.replace(".", "").replace("-", "").toUpperCase();

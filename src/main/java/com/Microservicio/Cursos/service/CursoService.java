@@ -2,7 +2,6 @@ package com.Microservicio.Cursos.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.Microservicio.Cursos.exception.CursoNotFoundException;
@@ -18,7 +17,6 @@ public class CursoService {
 
     private final CursoRepository cursoRepository;
 
-    @Autowired
     public CursoService(CursoRepository cursoRepository) {
         this.cursoRepository = cursoRepository;
     }
