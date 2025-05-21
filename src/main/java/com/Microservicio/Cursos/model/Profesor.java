@@ -3,6 +3,8 @@ package com.Microservicio.Cursos.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -34,5 +36,6 @@ public class Profesor {
     private String emailInstitucional;
 
     @OneToMany(mappedBy = "profesor")
+    @JsonIncludeProperties({"idCurso", "nombreCurso"})
     private List<Curso> cursos = new ArrayList<>();
 }

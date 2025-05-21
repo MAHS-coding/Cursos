@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 public class CursoService {
     @Autowired
     private CursoRepository cursoRepository;
+    @Autowired
     private ProfesorRepository profesorRepository;
 
     // Listar Cursos existentes
