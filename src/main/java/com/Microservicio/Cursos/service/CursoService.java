@@ -13,13 +13,43 @@ public class CursoService {
     @Autowired
     private CursoRepository cursoRepository;
 
+    //Listar Cursos existentes
     public List<Curso> listarCursos()
     {
         return cursoRepository.findAll();
     }
 
+    //Mostrar curso por id
+    public Curso obtenerCursoPorId(int idCurso)
+    {
+        return cursoRepository.findById(idCurso)
+                .orElseThrow(() -> new RuntimeException("Curso con id " + idCurso + " no encontrado."));
+    }
+
+    //Crer un curso nuevo
     public Curso crearCurso(Curso curso)
     {
         return cursoRepository.save(curso);
+    }
+
+    //Actualizar la informacion de un curso por id
+    public Curso actualizarCurso(Curso curso)
+    {
+        if (cursoRepository.existsById(curso.getIdCurso()))
+        {
+            return cursoRepository.save(curso);
+        } else {
+            throw new RuntimeException("Curso con id: " + curso.getIdCurso() + " no encontrado.");
+        }
+    }
+
+    //Eliminar Curso por idCurso
+    public void eliminarCurso(int idCurso)
+    {
+        if (!cursoRepository.existsById(idCurso))
+        {
+            throw new RuntimeException("Curso con id " + idCurso + " no encontrado.");
+        }
+        cursoRepository.deleteById(idCurso);
     }
 }
