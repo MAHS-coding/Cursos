@@ -18,7 +18,7 @@ public class CursoService {
         return cursoRepository.findAll();
     }
 
-    public Curso guardarCurso(Curso curso)
+    public Curso crearCurso(Curso curso)
     {
         return cursoRepository.save(curso);
     }
