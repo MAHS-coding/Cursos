@@ -19,50 +19,66 @@ import com.Microservicio.Cursos.service.CursoService;
 
 @RestController
 @RequestMapping("api/cursos")
-public class CursoController
-{
+public class CursoController {
     @Autowired
     private CursoService cursoService;
 
-    //Mostrar los cursos existentes
+    // Mostrar los cursos existentes
     @GetMapping
-    public ResponseEntity<List<Curso>> getCursos()
-    {
-        return new ResponseEntity<>(cursoService.listarCursos(),HttpStatus.OK);
+    public ResponseEntity<List<Curso>> getCursos() {
+        return new ResponseEntity<>(cursoService.listarCursos(), HttpStatus.OK);
     }
 
-    //Mostrar los cursos existentes por idCurso
+    // Mostrar los cursos existentes por idCurso
     @GetMapping("/{idCurso}")
-    public ResponseEntity<Curso> obtenerCursoPorId(@PathVariable int idCurso)
-    {
+    public ResponseEntity<Curso> obtenerCursoPorId(@PathVariable int idCurso) {
         Curso curso = cursoService.obtenerCursoPorId(idCurso);
         return new ResponseEntity<>(curso, HttpStatus.OK);
     }
 
-    //Publicar un nuevo curso
+    // Publicar un nuevo curso
     @PostMapping
-    public ResponseEntity<Curso> crearCurso(@RequestBody Curso curso)
-    {
+    public ResponseEntity<Curso> crearCurso(@RequestBody Curso curso) {
         Curso nuevoCurso = cursoService.crearCurso(curso);
         return new ResponseEntity<>(nuevoCurso, HttpStatus.CREATED);
     }
 
-    //Modificar un curso por idCurso
+    // Modificar un curso por idCurso
     @PutMapping("/{idCurso}")
     public ResponseEntity<Curso> actualizarCurso(
-        @PathVariable("idCurso") int idCurso,
-        @RequestBody Curso cursoActualizado)
-        {
-            cursoActualizado.setIdCurso(idCurso);
+            @PathVariable("idCurso") int idCurso,
+            @RequestBody Curso cursoActualizado) {
+        cursoActualizado.setIdCurso(idCurso);
 
-            Curso cursoActualizadoDB = cursoService.actualizarCurso(cursoActualizado);
-            return new ResponseEntity<>(cursoActualizadoDB, HttpStatus.OK);
+        Curso cursoActualizadoDB = cursoService.actualizarCurso(cursoActualizado);
+        return new ResponseEntity<>(cursoActualizadoDB, HttpStatus.OK);
+    }
+
+    // Asignar profesor a curso
+    @PutMapping("/{idCurso}/profesores/{idProfesor}")
+    public ResponseEntity<?> asignarProfesor(
+            @PathVariable int idCurso,
+            @PathVariable int idProfesor) {
+
+        try {
+            Curso cursoActualizado = cursoService.asignarProfesorACurso(idCurso, idProfesor);
+            return ResponseEntity.ok(cursoActualizado);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al asignar profesor: " + e.getMessage());
         }
+    }
 
-    //Eliminar curso por idCurso
+    // Desasociar profesor de un curso
+    @DeleteMapping("/{idCurso}/profesor")
+    public ResponseEntity<Void> removerProfesor(@PathVariable int idCurso) {
+        cursoService.removerProfesorDeCurso(idCurso);
+        return ResponseEntity.noContent().build();
+    }
+
+    // Eliminar curso por idCurso
     @DeleteMapping("/{idCurso}")
-    public ResponseEntity<?> eliminarCurso(@PathVariable int idCurso)
-    {
+    public ResponseEntity<?> eliminarCurso(@PathVariable int idCurso) {
         try {
             cursoService.eliminarCurso(idCurso);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -70,5 +86,4 @@ public class CursoController
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
     }
-
 }
