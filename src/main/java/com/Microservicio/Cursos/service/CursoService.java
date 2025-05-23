@@ -70,11 +70,12 @@ public class CursoService {
         return cursoRepository.save(curso);
     }
 
+    
     // Desasociar profesor de un curso
     public Curso removerProfesorDeCurso(int idCurso) {
         Curso curso = cursoRepository.findById(idCurso)
-                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
-
+        .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+        
         curso.setProfesor(null);
         return cursoRepository.save(curso);
     }

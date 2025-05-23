@@ -41,5 +41,5 @@ public class Curso {
     @JoinColumn(name = "id_profesor")
     @JsonIncludeProperties({"idProfesor", "nombreProfesor", "emailInstitucional"})
     private Profesor profesor;
-
+    
 }
