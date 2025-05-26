@@ -1,23 +1,29 @@
 package com.Microservicio.Cursos.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
-@Table(name = "inscripcion")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Inscripcion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idInscripcion;
 
     @Column(nullable = false)
     private Long idCurso;
 
     @Column(nullable = false)
-    private Integer idEstudiante;
+    private Long idEstudiante;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoInscripcion estado = EstadoInscripcion.PENDIENTE;
+    @Column(length = 100, nullable = false)
+    private String nombreEstudiante;
+
+    @Column(length = 50, nullable = false)
+    private String estado; // PENDIENTE, ACEPTADO, RECHAZADO
+
+    @Column(length = 50, nullable = false)
+    private String fechaInscripcion;
 }

@@ -4,11 +4,7 @@ import lombok.Data;
 
 @Data
 public class UsuarioDTO {
-    private Integer idUsuario;
-    private String nombreUsuario;
-    private String apellidoPUsuario;
-    private String apellidoMUsuario;
-    private String emailInstitucional;
-    private String tipoUsuario;
-    private boolean activo;
+    private int idUsuario;
+    private String nombre;
+    private String tipo; // "ADMINISTRADOR", "PROFESOR", "ESTUDIANTE"
 }

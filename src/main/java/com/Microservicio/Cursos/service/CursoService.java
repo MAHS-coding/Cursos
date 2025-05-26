@@ -1,27 +1,18 @@
 package com.Microservicio.Cursos.service;
 
-import com.Microservicio.Cursos.model.Curso;
-import com.Microservicio.Cursos.model.UsuarioDTO;
-import com.Microservicio.Cursos.repository.CursoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import com.Microservicio.Cursos.model.Curso;
+import com.Microservicio.Cursos.repository.CursoRepository;
 
 import java.util.List;
 
 @Service
 public class CursoService {
-    @Autowired private CursoRepository cursoRepository;
-    @Autowired private RestTemplate restTemplate;
+    @Autowired
+    private CursoRepository cursoRepository;
 
-    public Curso crearCurso(Curso curso, Integer idProfesor) {
-        UsuarioDTO profesor = obtenerUsuario(idProfesor);
-        if (profesor == null || !profesor.isActivo() || !"PROFESOR".equals(profesor.getTipoUsuario())) {
-            throw new RuntimeException("El usuario no es un profesor válido o está inactivo");
-        }
-        
-        curso.setIdProfesor(idProfesor);
-        curso.setCupoDisponible(curso.getCupoMaximo());
+    public Curso crearCurso(Curso curso) {
         return cursoRepository.save(curso);
     }
 
@@ -29,33 +20,15 @@ public class CursoService {
         return cursoRepository.findAll();
     }
 
-    public List<Curso> listarCursosActivos() {
-        return cursoRepository.findByActivoTrue();
-    }
-
-    public List<Curso> listarCursosPorProfesor(Integer idProfesor) {
-        return cursoRepository.findByIdProfesor(idProfesor);
-    }
-
     public Curso obtenerCursoPorId(Long id) {
-        return cursoRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
+        return cursoRepository.findById(id).orElse(null);
     }
 
-    public Curso actualizarCurso(Long id, Curso cursoActualizado) {
-        Curso cursoExistente = obtenerCursoPorId(id);
-        cursoExistente.setNombre(cursoActualizado.getNombre());
-        cursoExistente.setDescripcion(cursoActualizado.getDescripcion());
-        cursoExistente.setCupoMaximo(cursoActualizado.getCupoMaximo());
-        return cursoRepository.save(cursoExistente);
-    }
-
-    public void eliminarCurso(Long id) {
-        cursoRepository.deleteById(id);
-    }
-
-    private UsuarioDTO obtenerUsuario(Integer idUsuario) {
-        String url = "http://localhost:8081/api/usuarios/public/" + idUsuario;
-        return restTemplate.getForObject(url, UsuarioDTO.class);
+    public void actualizarCupoDisponible(Long idCurso, int cambio) {
+        Curso curso = cursoRepository.findById(idCurso).orElse(null);
+        if (curso != null) {
+            curso.setCupoDisponible(curso.getCupoDisponible() + cambio);
+            cursoRepository.save(curso);
+        }
     }
 }

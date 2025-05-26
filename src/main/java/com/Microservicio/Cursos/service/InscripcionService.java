@@ -1,77 +1,63 @@
 package com.Microservicio.Cursos.service;
 
-import com.Microservicio.Cursos.model.*;
-import com.Microservicio.Cursos.repository.InscripcionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import com.Microservicio.Cursos.model.*;
+import com.Microservicio.Cursos.repository.InscripcionRepository;
 
-import java.util.List;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class InscripcionService {
-    @Autowired private InscripcionRepository inscripcionRepository;
-    @Autowired private RestTemplate restTemplate;
-    @Autowired private CursoService cursoService;
+    @Autowired
+    private InscripcionRepository inscripcionRepository;
+    
+    @Autowired
+    private CursoService cursoService;
+    
+    @Autowired
+    private RestTemplate restTemplate;
 
-    public Inscripcion solicitarInscripcion(Integer idEstudiante, Long idCurso) {
-        UsuarioDTO estudiante = obtenerUsuario(idEstudiante);
-        if (estudiante == null || !estudiante.isActivo() || !"ESTUDIANTE".equals(estudiante.getTipoUsuario())) {
-            throw new RuntimeException("El usuario no es un estudiante válido o está inactivo");
-        }
-
-        Curso curso = cursoService.obtenerCursoPorId(idCurso);
-        if (!curso.isActivo()) {
-            throw new RuntimeException("El curso no está activo");
-        }
-
-        if (inscripcionRepository.existsByIdEstudianteAndIdCurso(idEstudiante, idCurso)) {
-            throw new RuntimeException("El estudiante ya tiene una solicitud para este curso");
-        }
-
-        Inscripcion inscripcion = new Inscripcion();
-        inscripcion.setIdCurso(idCurso);
-        inscripcion.setIdEstudiante(idEstudiante);
-        inscripcion.setEstado(EstadoInscripcion.PENDIENTE);
-
-        return inscripcionRepository.save(inscripcion);
-    }
-
-    public Inscripcion aprobarInscripcion(Long idInscripcion, Integer idAdmin) {
-        UsuarioDTO admin = obtenerUsuario(idAdmin);
-        if (admin == null || !admin.isActivo() || !"ADMINISTRADOR".equals(admin.getTipoUsuario())) {
-            throw new RuntimeException("No tiene permisos para aprobar inscripciones");
-        }
-
-        Inscripcion inscripcion = inscripcionRepository.findById(idInscripcion)
-                .orElseThrow(() -> new RuntimeException("Inscripción no encontrada"));
-
-        if (inscripcion.getEstado() != EstadoInscripcion.PENDIENTE) {
-            throw new RuntimeException("Solo se pueden aprobar inscripciones pendientes");
-        }
-
+    public Inscripcion crearInscripcion(Inscripcion inscripcion) {
+        // Verificar si el curso existe
         Curso curso = cursoService.obtenerCursoPorId(inscripcion.getIdCurso());
-        if (curso.getCupoDisponible() <= 0) {
-            throw new RuntimeException("No hay cupo disponible en el curso");
+        if (curso == null) {
+            return null;
         }
-
-        curso.setCupoDisponible(curso.getCupoDisponible() - 1);
-        cursoService.actualizarCurso(curso.getId(), curso);
-
-        inscripcion.setEstado(EstadoInscripcion.APROBADA);
+        
+        // Verificar cupos disponibles
+        if (curso.getCupoDisponible() <= 0) {
+            return null;
+        }
+        
+        // Obtener información del estudiante
+        String url = "http://localhost:8081/api/usuarios/" + inscripcion.getIdEstudiante();
+        UsuarioDTO estudiante = restTemplate.getForObject(url, UsuarioDTO.class);
+        
+        if (estudiante == null || !"ESTUDIANTE".equals(estudiante.getTipo())) {
+            return null;
+        }
+        
+        inscripcion.setNombreEstudiante(estudiante.getNombre());
+        inscripcion.setEstado("PENDIENTE");
+        inscripcion.setFechaInscripcion(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        
         return inscripcionRepository.save(inscripcion);
     }
 
-    public List<Inscripcion> listarInscripcionesPorCurso(Long idCurso) {
-        return inscripcionRepository.findByIdCurso(idCurso);
-    }
-
-    public List<Inscripcion> listarInscripcionesPendientesPorCurso(Long idCurso) {
-        return inscripcionRepository.findByIdCursoAndEstado(idCurso, EstadoInscripcion.PENDIENTE);
-    }
-
-    private UsuarioDTO obtenerUsuario(Integer idUsuario) {
-        String url = "http://localhost:8081/api/usuarios/public/" + idUsuario;
-        return restTemplate.getForObject(url, UsuarioDTO.class);
+    public Inscripcion cambiarEstadoInscripcion(Long idInscripcion, String nuevoEstado) {
+        Inscripcion inscripcion = inscripcionRepository.findById(idInscripcion).orElse(null);
+        if (inscripcion == null) {
+            return null;
+        }
+        
+        if ("ACEPTADO".equals(nuevoEstado)) {
+            cursoService.actualizarCupoDisponible(inscripcion.getIdCurso(), -1);
+        }
+        
+        inscripcion.setEstado(nuevoEstado);
+        return inscripcionRepository.save(inscripcion);
     }
 }

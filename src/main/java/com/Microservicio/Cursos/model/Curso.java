@@ -1,20 +1,21 @@
 package com.Microservicio.Cursos.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 @Entity
-@Table(name = "curso")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Curso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idCurso;
 
-    @Column(nullable = false, length = 100)
+    @Column(length = 100, nullable = false)
     private String nombre;
 
-    @Column(nullable = false, length = 500)
+    @Column(length = 500, nullable = false)
     private String descripcion;
 
     @Column(nullable = false)
@@ -24,8 +25,5 @@ public class Curso {
     private Integer cupoDisponible;
 
     @Column(nullable = false)
-    private boolean activo = true;
-
-    @Column(nullable = false)
-    private Integer idProfesor;
+    private Long idProfesor;
 }
