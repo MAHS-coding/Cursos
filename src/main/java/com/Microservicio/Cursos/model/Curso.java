@@ -1,45 +1,31 @@
 package com.Microservicio.Cursos.model;
 
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-
 
 @Entity
 @Table(name = "curso")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Curso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int idCurso;
+    private Long id;
 
-    @Column(length = 250, nullable = false)
-    private String nombreCurso;
+    @Column(nullable = false, length = 100)
+    private String nombre;
 
-    @Column(length = 250, nullable = false)
-    private String descripcionCurso;
-
-    @Column(nullable = false)
-    private int cuposCursoMax;
+    @Column(nullable = false, length = 500)
+    private String descripcion;
 
     @Column(nullable = false)
-    private int cuposCursoDisp;
+    private Integer cupoMaximo;
 
-    @ManyToOne
-    @JoinColumn(name = "id_profesor")
-    @JsonIncludeProperties({"idProfesor", "nombreProfesor", "emailInstitucional"})
-    private Profesor profesor;
-    
+    @Column(nullable = false)
+    private Integer cupoDisponible;
+
+    @Column(nullable = false)
+    private boolean activo = true;
+
+    @Column(nullable = false)
+    private Integer idProfesor;
 }

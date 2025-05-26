@@ -1,82 +1,61 @@
 package com.Microservicio.Cursos.service;
 
-import java.util.List;
-
+import com.Microservicio.Cursos.model.Curso;
+import com.Microservicio.Cursos.model.UsuarioDTO;
+import com.Microservicio.Cursos.repository.CursoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import com.Microservicio.Cursos.model.Curso;
-import com.Microservicio.Cursos.model.Profesor;
-import com.Microservicio.Cursos.repository.CursoRepository;
-import com.Microservicio.Cursos.repository.ProfesorRepository;
-
-import jakarta.transaction.Transactional;
+import java.util.List;
 
 @Service
 public class CursoService {
-    @Autowired
-    private CursoRepository cursoRepository;
-    @Autowired
-    private ProfesorRepository profesorRepository;
+    @Autowired private CursoRepository cursoRepository;
+    @Autowired private RestTemplate restTemplate;
 
-    // Listar Cursos existentes
+    public Curso crearCurso(Curso curso, Integer idProfesor) {
+        UsuarioDTO profesor = obtenerUsuario(idProfesor);
+        if (profesor == null || !profesor.isActivo() || !"PROFESOR".equals(profesor.getTipoUsuario())) {
+            throw new RuntimeException("El usuario no es un profesor válido o está inactivo");
+        }
+        
+        curso.setIdProfesor(idProfesor);
+        curso.setCupoDisponible(curso.getCupoMaximo());
+        return cursoRepository.save(curso);
+    }
+
     public List<Curso> listarCursos() {
         return cursoRepository.findAll();
     }
 
-    // Mostrar curso por id
-    public Curso obtenerCursoPorId(int idCurso) {
-        return cursoRepository.findById(idCurso)
-                .orElseThrow(() -> new RuntimeException("Curso con id " + idCurso + " no encontrado."));
+    public List<Curso> listarCursosActivos() {
+        return cursoRepository.findByActivoTrue();
     }
 
-    // Crer un curso nuevo
-    public Curso crearCurso(Curso curso) {
-        return cursoRepository.save(curso);
+    public List<Curso> listarCursosPorProfesor(Integer idProfesor) {
+        return cursoRepository.findByIdProfesor(idProfesor);
     }
 
-    // Actualizar la informacion de un curso por id
-    public Curso actualizarCurso(Curso curso) {
-        if (cursoRepository.existsById(curso.getIdCurso())) {
-            return cursoRepository.save(curso);
-        } else {
-            throw new RuntimeException("Curso con id: " + curso.getIdCurso() + " no encontrado.");
-        }
+    public Curso obtenerCursoPorId(Long id) {
+        return cursoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
     }
 
-    // Eliminar Curso por idCurso
-    public void eliminarCurso(int idCurso) {
-        if (!cursoRepository.existsById(idCurso)) {
-            throw new RuntimeException("Curso con id " + idCurso + " no encontrado.");
-        }
-        cursoRepository.deleteById(idCurso);
+    public Curso actualizarCurso(Long id, Curso cursoActualizado) {
+        Curso cursoExistente = obtenerCursoPorId(id);
+        cursoExistente.setNombre(cursoActualizado.getNombre());
+        cursoExistente.setDescripcion(cursoActualizado.getDescripcion());
+        cursoExistente.setCupoMaximo(cursoActualizado.getCupoMaximo());
+        return cursoRepository.save(cursoExistente);
     }
 
-    // Asociar profesor a curso
-    @Transactional
-    public Curso asignarProfesorACurso(int idCurso, int idProfesor) {
-        // 1. Verificar existencia del curso
-        Curso curso = cursoRepository.findById(idCurso)
-                .orElseThrow(() -> new RuntimeException("Curso no encontrado con ID: " + idCurso));
-
-        // 2. Verificar existencia del profesor
-        Profesor profesor = profesorRepository.findById(idProfesor)
-                .orElseThrow(() -> new RuntimeException("Profesor no encontrado con ID: " + idProfesor));
-
-        // 3. Asignar relación
-        curso.setProfesor(profesor);
-
-        // 4. Guardar
-        return cursoRepository.save(curso);
+    public void eliminarCurso(Long id) {
+        cursoRepository.deleteById(id);
     }
 
-    
-    // Desasociar profesor de un curso
-    public Curso removerProfesorDeCurso(int idCurso) {
-        Curso curso = cursoRepository.findById(idCurso)
-        .orElseThrow(() -> new RuntimeException("Curso no encontrado"));
-        
-        curso.setProfesor(null);
-        return cursoRepository.save(curso);
+    private UsuarioDTO obtenerUsuario(Integer idUsuario) {
+        String url = "http://localhost:8081/api/usuarios/public/" + idUsuario;
+        return restTemplate.getForObject(url, UsuarioDTO.class);
     }
 }
