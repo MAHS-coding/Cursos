@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,7 +34,7 @@ public class InscripcionController {
         return new ResponseEntity<>(inscripcionService.listarInscripciones(), HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/inscribirse")
     public ResponseEntity<Inscripcion> postInscripcion(@RequestBody Inscripcion inscripcion) {
         try {
             return new ResponseEntity<>(inscripcionService.crearInscripcion(inscripcion), HttpStatus.OK);
@@ -43,18 +43,21 @@ public class InscripcionController {
         }
     }
 
-    @PatchMapping("/{idInscripcion}/estado")
+    @PutMapping("/{idInscripcion}/estado")
     public ResponseEntity<?> actualizarEstado(
             @PathVariable Long idInscripcion,
             @RequestBody Map<String, String> request) {
 
         EstadoInscripcion estado = EstadoInscripcion.valueOf(request.get("estado"));
-        Inscripcion inscripcion = inscripcionService.cambiarEstado(idInscripcion, estado);
+        Inscripcion resultado = inscripcionService.cambiarEstado(idInscripcion, estado);
 
         if (estado == EstadoInscripcion.RECHAZADO) {
-            return ResponseEntity.ok().body("Inscripción rechazada y eliminada correctamente");
+            return ResponseEntity.ok("✅ Inscripción rechazada y eliminada correctamente.");
+        } else if (estado == EstadoInscripcion.ACEPTADO) {
+            return ResponseEntity.ok("✅ Inscripción aceptada. El usuario ha sido inscrito en el curso.");
         } else {
-            return ResponseEntity.ok(inscripcion);
+            return ResponseEntity.ok(resultado);
         }
     }
+
 }
