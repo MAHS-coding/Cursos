@@ -12,24 +12,27 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/cursos")
 public class CursoController {
+
     @Autowired
     private CursoService cursoService;
 
-    @PostMapping
-    public ResponseEntity<Curso> crearCurso(@RequestBody Curso curso) {
-        try {
-            return new ResponseEntity<>(cursoService.crearCurso(curso), HttpStatus.CREATED);
-        } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.CONFLICT);
-        }
-    }
-
-    @GetMapping
-    public ResponseEntity<List<Curso>> listarCursos() {
+    @GetMapping 
+    public ResponseEntity<List<Curso>> getCursos()
+    {
         List<Curso> cursos = cursoService.listarCursos();
-        if (cursos.isEmpty()) {
+        if(cursos.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(cursos, HttpStatus.OK);
+        return new ResponseEntity<>(cursoService.listarCursos(), HttpStatus.OK);
+    }
+
+    @PostMapping
+    public ResponseEntity<Curso> postCurso(@RequestBody Curso curso)
+    {
+        try {
+            return new ResponseEntity<>(cursoService.crearCurso(curso),HttpStatus.OK);
+        } catch (Exception e ) {
+            return new ResponseEntity<>(HttpStatus.CONFLICT);
+        }
     }
 }

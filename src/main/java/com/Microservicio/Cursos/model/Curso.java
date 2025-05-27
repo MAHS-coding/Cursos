@@ -12,18 +12,16 @@ public class Curso {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idCurso;
 
-    @Column(length = 100, nullable = false)
-    private String nombre;
+    @Column(name = "nombre_curso", length = 150, nullable = false)
+    private String nombreCurso;
 
-    @Column(length = 500, nullable = false)
-    private String descripcion;
+    @Column(name = "descripcion_curso", length = 150, nullable = false)
+    private String descripcionCurso;
 
-    @Column(nullable = false)
-    private Integer cupoMaximo;
+    @Column(name = "cupo_maximo", nullable = false)
+    private int cupoMaximo;
 
-    @Column(nullable = false)
-    private Integer cupoDisponible;
+    @Column(name = "cupo_disponible", nullable = true)
+    private int cupoDisponible;
 
-    @Column(nullable = false)
-    private Long idProfesor;
 }

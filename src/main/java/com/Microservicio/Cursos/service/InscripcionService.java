@@ -1,63 +1,56 @@
 package com.Microservicio.Cursos.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import com.Microservicio.Cursos.model.*;
-import com.Microservicio.Cursos.repository.InscripcionRepository;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import com.Microservicio.Cursos.model.EstadoInscripcion;
+import com.Microservicio.Cursos.model.Inscripcion;
+import com.Microservicio.Cursos.model.UsuarioDTO;
+import com.Microservicio.Cursos.repository.InscripcionRepository;
 
 @Service
 public class InscripcionService {
+
     @Autowired
     private InscripcionRepository inscripcionRepository;
-    
-    @Autowired
-    private CursoService cursoService;
-    
+
     @Autowired
     private RestTemplate restTemplate;
 
+    // Mostrar todas las inscripciones
+    public List<Inscripcion> listarInscripciones() {
+        return inscripcionRepository.findAll();
+    }
+
     public Inscripcion crearInscripcion(Inscripcion inscripcion) {
-        // Verificar si el curso existe
-        Curso curso = cursoService.obtenerCursoPorId(inscripcion.getIdCurso());
-        if (curso == null) {
-            return null;
+        String url = "http://localhost:8080/api/usuarios/" + inscripcion.getIdUsuario();
+        UsuarioDTO usuario = restTemplate.getForObject(url, UsuarioDTO.class);
+        if (usuario == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado");
         }
-        
-        // Verificar cupos disponibles
-        if (curso.getCupoDisponible() <= 0) {
-            return null;
-        }
-        
-        // Obtener información del estudiante
-        String url = "http://localhost:8081/api/usuarios/" + inscripcion.getIdEstudiante();
-        UsuarioDTO estudiante = restTemplate.getForObject(url, UsuarioDTO.class);
-        
-        if (estudiante == null || !"ESTUDIANTE".equals(estudiante.getTipo())) {
-            return null;
-        }
-        
-        inscripcion.setNombreEstudiante(estudiante.getNombre());
-        inscripcion.setEstado("PENDIENTE");
-        inscripcion.setFechaInscripcion(LocalDate.now().format(DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-        
+        inscripcion.setIdUsuario(usuario.getIdUsuario());
         return inscripcionRepository.save(inscripcion);
     }
 
-    public Inscripcion cambiarEstadoInscripcion(Long idInscripcion, String nuevoEstado) {
-        Inscripcion inscripcion = inscripcionRepository.findById(idInscripcion).orElse(null);
-        if (inscripcion == null) {
-            return null;
+    public Inscripcion cambiarEstado(Long idInscripcion, EstadoInscripcion nuevoEstado) {
+        Inscripcion inscripcion = inscripcionRepository.findById(idInscripcion)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Inscripción no encontrada con ID: " + idInscripcion));
+
+        if (nuevoEstado == EstadoInscripcion.RECHAZADO) {
+            // Elimina la inscripción si es RECHAZADO
+            inscripcionRepository.delete(inscripcion);
+            return inscripcion; // Retorna la inscripción eliminada
+        } else {
+            // Actualiza el estado si es ACEPTADO o PENDIENTE
+            inscripcion.setEstado(nuevoEstado);
+            return inscripcionRepository.save(inscripcion);
         }
-        
-        if ("ACEPTADO".equals(nuevoEstado)) {
-            cursoService.actualizarCupoDisponible(inscripcion.getIdCurso(), -1);
-        }
-        
-        inscripcion.setEstado(nuevoEstado);
-        return inscripcionRepository.save(inscripcion);
     }
 }

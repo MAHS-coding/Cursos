@@ -12,18 +12,13 @@ public class Inscripcion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idInscripcion;
 
-    @Column(nullable = false)
+    @Column(name = "idEstudiante", nullable = false)
+    private int idUsuario;
+
+    @Column(name = "idCurso", nullable = false)
     private Long idCurso;
 
-    @Column(nullable = false)
-    private Long idEstudiante;
+    @Enumerated(EnumType.STRING)
+    private EstadoInscripcion estado = EstadoInscripcion.PENDIENTE;
 
-    @Column(length = 100, nullable = false)
-    private String nombreEstudiante;
-
-    @Column(length = 50, nullable = false)
-    private String estado; // PENDIENTE, ACEPTADO, RECHAZADO
-
-    @Column(length = 50, nullable = false)
-    private String fechaInscripcion;
 }
