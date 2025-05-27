@@ -38,7 +38,7 @@ public class InscripcionService {
 
     public Inscripcion crearInscripcion(Inscripcion inscripcion) {
         // 1. Validar existencia del usuario
-        String urlUsuario = "http://localhost:8080/api/usuarios/" + inscripcion.getIdUsuario();
+        String urlUsuario = "http://localhost:8083/api/usuarios/" + inscripcion.getIdUsuario();
         UsuarioDTO usuario;
         try {
             usuario = restTemplate.getForObject(urlUsuario, UsuarioDTO.class);
@@ -56,10 +56,6 @@ public class InscripcionService {
         if (usuario.getTipoUsuario() == null || !"ESTUDIANTE".equalsIgnoreCase(usuario.getTipoUsuario())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo estudiantes pueden inscribirse a un curso");
         }
-
-        // 2. Validar existencia del curso
-        Curso curso = cursoRepository.findById(inscripcion.getIdCurso())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado"));
 
         Optional<Inscripcion> existente = inscripcionRepository.findByIdUsuarioAndIdCurso(inscripcion.getIdUsuario(),
                 inscripcion.getIdCurso());
@@ -92,7 +88,7 @@ public class InscripcionService {
             cursoRepository.save(curso);
 
             // Vincular curso al usuario
-            String urlUsuario = "http://localhost:8080/api/usuarios/" + inscripcion.getIdUsuario() + "/vincular-curso";
+            String urlUsuario = "http://localhost:8083/api/usuarios/" + inscripcion.getIdUsuario() + "/vincular-curso";
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("cursoId", curso.getIdCurso());
             requestBody.put("cursoNombre", curso.getNombreCurso());
