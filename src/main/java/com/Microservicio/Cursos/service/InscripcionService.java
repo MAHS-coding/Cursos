@@ -3,10 +3,12 @@ package com.Microservicio.Cursos.service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -37,22 +39,37 @@ public class InscripcionService {
     public Inscripcion crearInscripcion(Inscripcion inscripcion) {
         // 1. Validar existencia del usuario
         String urlUsuario = "http://localhost:8080/api/usuarios/" + inscripcion.getIdUsuario();
-        UsuarioDTO usuario = restTemplate.getForObject(urlUsuario, UsuarioDTO.class);
+        UsuarioDTO usuario;
+        try {
+            usuario = restTemplate.getForObject(urlUsuario, UsuarioDTO.class);
+        } catch (HttpClientErrorException e) {
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado");
+            }
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error al consultar usuario");
+        }
+
         if (usuario == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado");
+        }
+
+        if (usuario.getTipoUsuario() == null || !"ESTUDIANTE".equalsIgnoreCase(usuario.getTipoUsuario())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Solo estudiantes pueden inscribirse a un curso");
         }
 
         // 2. Validar existencia del curso
         Curso curso = cursoRepository.findById(inscripcion.getIdCurso())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Curso no encontrado"));
 
+        Optional<Inscripcion> existente = inscripcionRepository.findByIdUsuarioAndIdCurso(inscripcion.getIdUsuario(),
+                inscripcion.getIdCurso());
+        if (existente.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una inscripción para este curso");
+        }
+
         // 3. Guardar inscripción
         inscripcion.setEstado(EstadoInscripcion.PENDIENTE); // por si no viene del frontend
         Inscripcion inscripcionGuardada = inscripcionRepository.save(inscripcion);
-
-        // 4. Agregar datos extra para respuesta
-        inscripcionGuardada.setEmailUsuario(usuario.getEmailInstitucional());
-        inscripcionGuardada.setNombreCurso(curso.getNombreCurso());
 
         return inscripcionGuardada;
     }

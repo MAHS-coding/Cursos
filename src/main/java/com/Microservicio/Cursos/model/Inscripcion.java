@@ -21,10 +21,4 @@ public class Inscripcion {
     @Enumerated(EnumType.STRING)
     private EstadoInscripcion estado = EstadoInscripcion.PENDIENTE;
 
-    @Transient
-    private String emailUsuario;
-
-    @Transient
-    private String nombreCurso;
-
 }

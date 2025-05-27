@@ -16,22 +16,25 @@ public class CursoController {
     @Autowired
     private CursoService cursoService;
 
-    @GetMapping 
-    public ResponseEntity<List<Curso>> getCursos()
-    {
+    @GetMapping
+    public ResponseEntity<List<Curso>> getCursos() {
         List<Curso> cursos = cursoService.listarCursos();
-        if(cursos.isEmpty()) {
+        if (cursos.isEmpty()) {
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
-        return new ResponseEntity<>(cursoService.listarCursos(), HttpStatus.OK);
+        return new ResponseEntity<>(cursos, HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    public Curso getCursoPorId(@PathVariable Long id) {
+        return cursoService.obtenerCursoPorId(id);
     }
 
     @PostMapping
-    public ResponseEntity<Curso> postCurso(@RequestBody Curso curso)
-    {
+    public ResponseEntity<Curso> postCurso(@RequestBody Curso curso) {
         try {
-            return new ResponseEntity<>(cursoService.crearCurso(curso),HttpStatus.OK);
-        } catch (Exception e ) {
+            return new ResponseEntity<>(cursoService.crearCurso(curso), HttpStatus.OK);
+        } catch (Exception e) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
     }
